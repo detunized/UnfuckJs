@@ -77,10 +77,13 @@ public class UnfuckJsIntention extends PsiElementBaseIntentionAction {
     }
 
     private void convertAndToIf(JSStatement s, JSBinaryExpression e) {
-        JSElementFactory.replaceStatement(s, String.format(
-                "if (%s) { %s; }",
-                e.getLOperand().getText(),
-                e.getROperand().getText()));
+        JSIfStatement ifs = (JSIfStatement)JSElementFactory.replaceStatement(
+                s, String.format(
+                        "if (%s) { %s; }",
+                        e.getLOperand().getText(),
+                        e.getROperand().getText()));
+
+        unfuckStatement(ifs.getThen());
     }
 
     private String appendSpace(String text) {
