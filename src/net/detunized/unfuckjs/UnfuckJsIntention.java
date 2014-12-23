@@ -54,11 +54,17 @@ public class UnfuckJsIntention extends PsiElementBaseIntentionAction {
         if (parent instanceof JSIfStatement) {
             JSIfStatement ifStatement = (JSIfStatement)parent;
             if (s == ifStatement.getThen() || s == ifStatement.getElse()) {
-                JSElementFactory.replaceStatement(s, '{' + lhs + rhs + '}');
+                JSBlockStatement block = (JSBlockStatement)JSElementFactory.replaceStatement(s, '{' + lhs + rhs + '}');
+
+                for (JSStatement i: block.getStatements())
+                    unfuckStatement(i);
             }
         } else {
-            JSStatement ns = JSElementFactory.replaceStatement(s, lhs);
-            JSElementFactory.addStatementAfter(ns, rhs);
+            JSStatement ns1 = JSElementFactory.replaceStatement(s, lhs);
+            JSStatement ns2 = JSElementFactory.addStatementAfter(ns1, rhs);
+
+            unfuckStatement(ns1);
+            unfuckStatement(ns2);
         }
     }
 
