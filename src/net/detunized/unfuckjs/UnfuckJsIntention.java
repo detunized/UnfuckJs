@@ -1,12 +1,14 @@
 package net.detunized.unfuckjs;
 
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction;
+import com.intellij.lang.javascript.JSElementTypes;
 import com.intellij.lang.javascript.psi.*;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
+import org.intellij.idea.lang.javascript.psiutil.BinaryOperatorUtils;
 import org.intellij.idea.lang.javascript.psiutil.JSElementFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,6 +32,12 @@ public class UnfuckJsIntention extends PsiElementBaseIntentionAction {
         JSExpression e = s.getExpression();
         if (e instanceof JSCommaExpression) {
             splitComma(s, (JSCommaExpression)e);
+        } else if (e instanceof JSBinaryExpression) {
+            JSBinaryExpression be = (JSBinaryExpression)e;
+            String op = BinaryOperatorUtils.getOperatorText(be.getOperationSign());
+            if (op.equals("&&")) {
+                convertAndToIf(s, be);
+            }
         }
     }
 
@@ -66,6 +74,13 @@ public class UnfuckJsIntention extends PsiElementBaseIntentionAction {
             unfuckStatement(ns1);
             unfuckStatement(ns2);
         }
+    }
+
+    private void convertAndToIf(JSStatement s, JSBinaryExpression e) {
+        JSElementFactory.replaceStatement(s, String.format(
+                "if (%s) { %s; }",
+                e.getLOperand().getText(),
+                e.getROperand().getText()));
     }
 
     private String appendSpace(String text) {
