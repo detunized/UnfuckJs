@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.IncorrectOperationException;
 import org.intellij.idea.lang.javascript.psiutil.BinaryOperatorUtils;
 import org.intellij.idea.lang.javascript.psiutil.JSElementFactory;
+import org.intellij.idea.lang.javascript.psiutil.ParenthesesUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class UnfuckJsIntention extends PsiElementBaseIntentionAction {
@@ -38,6 +39,8 @@ public class UnfuckJsIntention extends PsiElementBaseIntentionAction {
             if (op.equals("&&")) {
                 convertAndToIf(s, be);
             }
+        } else if (e instanceof JSParenthesizedExpression) {
+            stripParens(s, (JSParenthesizedExpression)e);
         }
     }
 
@@ -84,6 +87,14 @@ public class UnfuckJsIntention extends PsiElementBaseIntentionAction {
                         e.getROperand().getText()));
 
         unfuckStatement(ifs.getThen());
+    }
+
+    private void stripParens(JSStatement s, JSParenthesizedExpression e) {
+        JSStatement ns = JSElementFactory.replaceStatement(
+                s,
+                ParenthesesUtils.stripParentheses(e).getText());
+
+        unfuckStatement(ns);
     }
 
     private String appendSpace(String text) {

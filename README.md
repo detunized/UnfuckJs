@@ -20,6 +20,7 @@ converting `?:` to `if/else`. Use those from the standard package.
  - split comma expressions into individual statements
  - convert `&&` expressions to `if`
  - convert `||` expression to `if (! ...)`
+ - strip unnecessary parenthesis in statements
 
 
 ## License
