@@ -9,6 +9,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import org.intellij.idea.lang.javascript.psiutil.BinaryOperatorUtils
 import org.intellij.idea.lang.javascript.psiutil.JSElementFactory
 import org.intellij.idea.lang.javascript.psiutil.ParenthesesUtils
+import org.intellij.idea.lang.javascript.psiutil.BoolUtils
 
 public class UnfuckJsIntention: PsiElementBaseIntentionAction() {
     override fun invoke(project: Project, editor: Editor, psiElement: PsiElement) {
@@ -32,6 +33,7 @@ public class UnfuckJsIntention: PsiElementBaseIntentionAction() {
                 val op = BinaryOperatorUtils.getOperatorText(e.getOperationSign())
                 when (op) {
                     "&&" -> convertAndToIf(s, e)
+                    "||" -> convertOrToIf(s, e)
                 }
             }
             is JSParenthesizedExpression -> stripParens(s, e)
@@ -75,6 +77,18 @@ public class UnfuckJsIntention: PsiElementBaseIntentionAction() {
         val ifs = JSElementFactory.replaceStatement(
                 s,
                 "if (%s) { %s; }".format(e.getLOperand().getText(), e.getROperand().getText())
+        ) as JSIfStatement
+
+        unfuckStatement((ifs.getThen() as JSBlockStatement).getStatements()[0])
+    }
+
+    private fun convertOrToIf(s: JSStatement, e: JSBinaryExpression) {
+        val ifs = JSElementFactory.replaceStatement(
+                s,
+                "if (%s) { %s; }".format(
+                        BoolUtils.getNegatedExpressionText(e.getLOperand()),
+                        e.getROperand().getText()
+                )
         ) as JSIfStatement
 
         unfuckStatement((ifs.getThen() as JSBlockStatement).getStatements()[0])
