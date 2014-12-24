@@ -77,7 +77,7 @@ public class UnfuckJsIntention: PsiElementBaseIntentionAction() {
                 "if (%s) { %s; }".format(e.getLOperand().getText(), e.getROperand().getText())
         ) as JSIfStatement
 
-        unfuckStatement(ifs.getThen())
+        unfuckStatement((ifs.getThen() as JSBlockStatement).getStatements()[0])
     }
 
     private fun stripParens(s: JSStatement, e: JSParenthesizedExpression) {
