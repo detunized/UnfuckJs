@@ -22,6 +22,7 @@ public class UnfuckJsIntention: PsiElementBaseIntentionAction() {
         when (s) {
             is JSExpressionStatement -> unfuckExpressionStatement(s)
             is JSReturnStatement -> unfuckReturnStatement(s)
+            is JSIfStatement -> unfuckIfStatement(s)
         }
     }
 
@@ -44,6 +45,29 @@ public class UnfuckJsIntention: PsiElementBaseIntentionAction() {
         val e = s.getExpression()
         if (e is JSCommaExpression) {
             splitComma(s, e, "return")
+        }
+    }
+
+    fun unfuckIfStatement(s: JSIfStatement) {
+        fun isInBlock(s: JSStatement) =
+                s.getParent() is JSBlockStatement
+
+        fun addBefore(anchor: JSStatement, code: String) {
+            if (isInBlock(anchor))
+                JSElementFactory.addStatementBefore(anchor, "${code};\n")
+            else
+                JSElementFactory.replaceElementWithStatement(anchor, "{ ${code};\n${s.getText()} }")
+        }
+
+        fun addBefore(anchor: JSStatement, e: PsiElement) =
+                addBefore(anchor, e.getText())
+
+        val e = s.getCondition()
+        if (e is JSCommaExpression) {
+            val lhs = e.getLOperand();
+            val rhs = e.getROperand()
+            JSElementFactory.replaceExpression(e, rhs.getText());
+            addBefore(s, lhs)
         }
     }
 
