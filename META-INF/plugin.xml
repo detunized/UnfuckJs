@@ -28,6 +28,9 @@
     <intentionAction>
       <className>net.detunized.unfuckjs.UnfuckJsIntention</className>
     </intentionAction>
+    <intentionAction>
+      <className>net.detunized.unfuckjs.SplitCommaExpression</className>
+    </intentionAction>
   </extensions>
 
   <application-components>
