@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.lang.javascript.psi.JSBinaryExpression
 import org.intellij.idea.lang.javascript.psiutil.BinaryOperatorUtils
 
-public abstract class StatementIntentionAction: IntentionAction() {
+abstract class StatementIntentionAction: IntentionAction() {
     abstract fun invoke(statement: JSStatement)
     abstract fun isAvailable(statement: JSStatement): Boolean
 

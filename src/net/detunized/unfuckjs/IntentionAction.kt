@@ -4,7 +4,7 @@ import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.PsiTreeUtil
 
-public abstract class IntentionAction: PsiElementBaseIntentionAction() {
+abstract class IntentionAction: PsiElementBaseIntentionAction() {
     abstract val name: String
 
     override fun getFamilyName() = "UnfuckJs"
