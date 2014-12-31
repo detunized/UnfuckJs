@@ -31,6 +31,9 @@
     <intentionAction>
       <className>net.detunized.unfuckjs.SplitCommaExpression</className>
     </intentionAction>
+    <intentionAction>
+      <className>net.detunized.unfuckjs.ConvertAndToIf</className>
+    </intentionAction>
   </extensions>
 
   <application-components>
