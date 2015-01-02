@@ -8,6 +8,7 @@ import org.intellij.idea.lang.javascript.psiutil.JSElementFactory
 import com.intellij.openapi.ui.Messages
 import com.intellij.lang.javascript.psi.JSReturnStatement
 import com.intellij.lang.javascript.psi.JSThrowStatement
+import com.intellij.lang.javascript.psi.JSIfStatement
 
 public class SplitCommaExpression: StatementIntentionAction() {
     override val name = "Split comma expression"
@@ -15,6 +16,7 @@ public class SplitCommaExpression: StatementIntentionAction() {
     override fun invoke(statement: JSStatement) {
         when (statement) {
             is JSExpressionStatement -> split(statement)
+            is JSIfStatement -> split(statement)
             is JSReturnStatement -> split(statement)
             is JSThrowStatement -> split(statement)
         }
@@ -22,6 +24,7 @@ public class SplitCommaExpression: StatementIntentionAction() {
 
     override fun isAvailable(statement: JSStatement) = when (statement) {
         is JSExpressionStatement -> statement.getExpression() is JSCommaExpression
+        is JSIfStatement -> statement.getCondition() is JSCommaExpression
         is JSReturnStatement -> statement.getExpression() is JSCommaExpression
         is JSThrowStatement -> statement.getExpression() is JSCommaExpression
         else -> false
@@ -34,6 +37,24 @@ public class SplitCommaExpression: StatementIntentionAction() {
                 e.getLOperand().getText() + ';',
                 e.getROperand().getText() + ';'
         )
+    }
+
+    // TODO: Remove copy paste
+    fun split(statement: JSIfStatement) {
+        val e = statement.getCondition() as JSCommaExpression
+        if (statement.getParent() is JSBlockStatement) {
+            val lhs = e.getLOperand().getText() + ';'
+            val rhs = e.getROperand().getText()
+            JSElementFactory.replaceExpression(e, rhs)
+            JSElementFactory.addStatementBefore(statement, lhs)
+        } else {
+            // TODO: Handle braceless blocks
+            Messages.showInfoMessage(
+                    "Only works in the block at the moment.\n" +
+                            "Use built-in quick fix to add braces first.",
+                    getText()
+            )
+        }
     }
 
     fun split(statement: JSReturnStatement) =
