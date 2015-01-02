@@ -7,6 +7,7 @@ import com.intellij.lang.javascript.psi.JSStatement
 import org.intellij.idea.lang.javascript.psiutil.JSElementFactory
 import com.intellij.openapi.ui.Messages
 import com.intellij.lang.javascript.psi.JSReturnStatement
+import com.intellij.lang.javascript.psi.JSThrowStatement
 
 public class SplitCommaExpression: StatementIntentionAction() {
     override val name = "Split comma expression"
@@ -15,12 +16,14 @@ public class SplitCommaExpression: StatementIntentionAction() {
         when (statement) {
             is JSExpressionStatement -> split(statement)
             is JSReturnStatement -> split(statement)
+            is JSThrowStatement -> split(statement)
         }
     }
 
     override fun isAvailable(statement: JSStatement) = when (statement) {
         is JSExpressionStatement -> statement.getExpression() is JSCommaExpression
         is JSReturnStatement -> statement.getExpression() is JSCommaExpression
+        is JSThrowStatement -> statement.getExpression() is JSCommaExpression
         else -> false
     }
 
@@ -33,14 +36,18 @@ public class SplitCommaExpression: StatementIntentionAction() {
         )
     }
 
-    fun split(statement: JSReturnStatement) {
-        val e = statement.getExpression() as JSCommaExpression
+    fun split(statement: JSReturnStatement) =
+        split(statement, statement.getExpression() as JSCommaExpression, "return")
+
+    fun split(statement: JSThrowStatement) =
+        split(statement, statement.getExpression() as JSCommaExpression, "throw")
+
+    fun split(statement: JSStatement, expression: JSCommaExpression, keyword: String) =
         split(
                 statement,
-                e.getLOperand().getText() + ';',
-                "return " + e.getROperand().getText() + ';'
+                expression.getLOperand().getText() + ';',
+                keyword + ' ' + expression.getROperand().getText() + ';'
         )
-    }
 
     fun split(statement: JSStatement, lhs: String, rhs: String) {
         if (statement.getParent() is JSBlockStatement) {
