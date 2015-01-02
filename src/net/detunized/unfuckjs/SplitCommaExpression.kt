@@ -11,43 +11,10 @@ import com.intellij.lang.javascript.psi.JSReturnStatement
 public class SplitCommaExpression: StatementIntentionAction() {
     override val name = "Split comma expression"
 
-    // TODO: Remove copy paste
     override fun invoke(statement: JSStatement) {
-        fun doIt(s: JSExpressionStatement, e: JSCommaExpression) {
-            val lhs = e.getLOperand().getText() + ';'
-            val rhs = e.getROperand().getText() + ';'
-
-            if (s.getParent() is JSBlockStatement) {
-                val newLhs = JSElementFactory.replaceStatement(s, lhs)
-                JSElementFactory.addStatementAfter(newLhs, rhs)
-            } else {
-                Messages.showInfoMessage(
-                        "Only works in the block at the moment.\n" +
-                                "Use built-in quick fix to add braces first.",
-                        getText()
-                )
-            }
-        }
-
-        fun doIt(s: JSReturnStatement, e: JSCommaExpression) {
-            val lhs = e.getLOperand().getText() + ';'
-            val rhs = "return " + e.getROperand().getText() + ';'
-
-            if (s.getParent() is JSBlockStatement) {
-                val newLhs = JSElementFactory.replaceStatement(s, lhs)
-                JSElementFactory.addStatementAfter(newLhs, rhs)
-            } else {
-                Messages.showInfoMessage(
-                        "Only works in the block at the moment.\n" +
-                                "Use built-in quick fix to add braces first.",
-                        getText()
-                )
-            }
-        }
-
         when (statement) {
-            is JSExpressionStatement -> doIt(statement, statement.getExpression() as JSCommaExpression)
-            is JSReturnStatement -> doIt(statement, statement.getExpression() as JSCommaExpression)
+            is JSExpressionStatement -> split(statement)
+            is JSReturnStatement -> split(statement)
         }
     }
 
@@ -55,5 +22,37 @@ public class SplitCommaExpression: StatementIntentionAction() {
         is JSExpressionStatement -> statement.getExpression() is JSCommaExpression
         is JSReturnStatement -> statement.getExpression() is JSCommaExpression
         else -> false
+    }
+
+    fun split(statement: JSExpressionStatement) {
+        val e = statement.getExpression() as JSCommaExpression
+        split(
+                statement,
+                e.getLOperand().getText() + ';',
+                e.getROperand().getText() + ';'
+        )
+    }
+
+    fun split(statement: JSReturnStatement) {
+        val e = statement.getExpression() as JSCommaExpression
+        split(
+                statement,
+                e.getLOperand().getText() + ';',
+                "return " + e.getROperand().getText() + ';'
+        )
+    }
+
+    fun split(statement: JSStatement, lhs: String, rhs: String) {
+        if (statement.getParent() is JSBlockStatement) {
+            val newLhs = JSElementFactory.replaceStatement(statement, lhs)
+            JSElementFactory.addStatementAfter(newLhs, rhs)
+        } else {
+            // TODO: Handle braceless blocks
+            Messages.showInfoMessage(
+                    "Only works in the block at the moment.\n" +
+                            "Use built-in quick fix to add braces first.",
+                    getText()
+            )
+        }
     }
 }
