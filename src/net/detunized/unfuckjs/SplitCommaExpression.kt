@@ -39,22 +39,14 @@ public class SplitCommaExpression: StatementIntentionAction() {
         )
     }
 
-    // TODO: Remove copy paste
     fun split(statement: JSIfStatement) {
-        val e = statement.getCondition() as JSCommaExpression
-        if (statement.getParent() is JSBlockStatement) {
+        applyInBlock(statement, {
+            val e = statement.getCondition() as JSCommaExpression
             val lhs = e.getLOperand().getText() + ';'
             val rhs = e.getROperand().getText()
             JSElementFactory.replaceExpression(e, rhs)
             JSElementFactory.addStatementBefore(statement, lhs)
-        } else {
-            // TODO: Handle braceless blocks
-            Messages.showInfoMessage(
-                    "Only works in the block at the moment.\n" +
-                            "Use built-in quick fix to add braces first.",
-                    getText()
-            )
-        }
+        })
     }
 
     fun split(statement: JSReturnStatement) =
@@ -63,17 +55,24 @@ public class SplitCommaExpression: StatementIntentionAction() {
     fun split(statement: JSThrowStatement) =
         split(statement, statement.getExpression() as JSCommaExpression, "throw")
 
-    fun split(statement: JSStatement, expression: JSCommaExpression, keyword: String) =
+    fun split(statement: JSStatement, expression: JSCommaExpression, keyword: String) {
         split(
                 statement,
                 expression.getLOperand().getText() + ';',
                 keyword + ' ' + expression.getROperand().getText() + ';'
         )
+    }
 
     fun split(statement: JSStatement, lhs: String, rhs: String) {
-        if (statement.getParent() is JSBlockStatement) {
+        applyInBlock(statement, {
             val newLhs = JSElementFactory.replaceStatement(statement, lhs)
             JSElementFactory.addStatementAfter(newLhs, rhs)
+        })
+    }
+
+    fun applyInBlock<S: JSStatement>(statement: S, action: () -> Unit) {
+        if (statement.getParent() is JSBlockStatement) {
+            action()
         } else {
             // TODO: Handle braceless blocks
             Messages.showInfoMessage(
