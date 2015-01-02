@@ -129,7 +129,7 @@ public class UnfuckJsIntention: PsiElementBaseIntentionAction() {
     }
 
     override fun isAvailable(project: Project, editor: Editor, psiElement: PsiElement): Boolean {
-        return true
+        return false
     }
 
     override fun getFamilyName(): String {
