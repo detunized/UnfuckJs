@@ -30,6 +30,10 @@ public class SplitCommaExpression: StatementIntentionAction() {
         else -> false
     }
 
+    // split  a, b;
+    //
+    // to     a;
+    //        b;
     fun split(statement: JSExpressionStatement) {
         val e = statement.getExpression() as JSCommaExpression
         split(
@@ -39,6 +43,10 @@ public class SplitCommaExpression: StatementIntentionAction() {
         )
     }
 
+    // split  if (a, b)
+    //
+    // to     a;
+    //        if (b)
     fun split(statement: JSIfStatement) {
         applyInBlock(statement, {
             val e = statement.getCondition() as JSCommaExpression
@@ -49,9 +57,17 @@ public class SplitCommaExpression: StatementIntentionAction() {
         })
     }
 
+    // split  return a, b;
+    //
+    // to     a;
+    //        return b;
     fun split(statement: JSReturnStatement) =
         split(statement, statement.getExpression() as JSCommaExpression, "return")
 
+    // split  throw a, b;
+    //
+    // to     a;
+    //        throw b;
     fun split(statement: JSThrowStatement) =
         split(statement, statement.getExpression() as JSCommaExpression, "throw")
 
